@@ -2,7 +2,8 @@
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs';
 import './globals.css';
 import { Inter } from 'next/font/google';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -18,6 +19,19 @@ export default function RootLayout({ children }) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
     )
   );
+
+  const router = useRouter();
+
+  useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(() => {
+      router.refresh();
+    });
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [supabase, router]);
 
   const signUp = () => {
     supabase.auth.signUp({
